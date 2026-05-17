@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CMS Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body { overflow: hidden; }
+    .admin-main { height: 100vh; overflow-y: auto; }
+    .rich-editor {
+      min-height: 180px; padding: 12px 14px;
+      background: var(--paper); border: 1px solid var(--border);
+      border-radius: var(--radius); font-family: var(--serif);
+      font-size: 0.95rem; line-height: 1.7; color: var(--ink);
+      outline: none;
+    }
+    .rich-editor:focus { border-color: var(--accent); }
+    .editor-toolbar {
+      display: flex; gap: 6px; flex-wrap: wrap;
+      margin-bottom: 6px;
+    }
+    .editor-toolbar button {
+      padding: 5px 10px; font-size: 0.78rem; font-weight: 500;
+      background: var(--paper-warm); border: 1px solid var(--border);
+      border-radius: 4px; cursor: pointer; font-family: var(--sans);
+      transition: background .15s;
+    }
+    .editor-toolbar button:hover { background: var(--border); }
+    .img-preview {
+      width: 100%; max-height: 200px; object-fit: cover;
+      border-radius: var(--radius); margin-top: 8px; display: none;
+    }
+    .section-divider {
+      font-size: .7rem; font-weight: 500; letter-spacing: .12em;
+      text-transform: uppercase; color: var(--ink-faint);
+      margin: 32px 0 16px; padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-layout">
+    <!-- SIDEBAR -->
+    <aside class="admin-sidebar">
+      <a href="index.html" class="admin-sidebar-logo">My Site<span>.</span></a>
+      <nav class="admin-nav">
+        <button class="admin-nav-item active" onclick="showPanel('dashboard')">
+          <span class="icon">📊</span> Dashboard
+        </button>
+        <button class="admin-nav-item" onclick="showPanel('profile')">
+          <span class="icon">👤</span> Profile
+        </button>
+        <button class="admin-nav-item" onclick="showPanel('posts')">
+          <span class="icon">✍️</span> Posts
+        </button>
+        <button class="admin-nav-item" onclick="showPanel('projects')">
+          <span class="icon">🗂️</span> Projects
+        </button>
+        <button class="admin-nav-item" onclick="showPanel('experience')">
+          <span class="icon">💼</span> Experience
+        </button>
+        <div style="margin-top:auto;padding:24px 16px;border-top:1px solid rgba(255,255,255,.06);margin-top:40px">
+          <a href="index.html" style="font-size:.8rem;color:rgba(250,249,247,.35);text-decoration:none;display:block;margin-bottom:10px">← View Site</a>
+          <button onclick="resetData()" style="font-size:.75rem;color:rgba(250,249,247,.25);background:none;border:none;cursor:pointer;font-family:var(--sans)">Reset to demo data</button>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="admin-main">
+
+      <!-- ── DASHBOARD ── -->
+      <div id="panel-dashboard" class="admin-panel active">
+        <div class="admin-topbar">
+          <h1>Dashboard</h1>
+          <a href="index.html" class="btn-ghost btn-sm" target="_blank">View Site →</a>
+        </div>
+        <div class="stats-row" id="stats-row"></div>
+        <p class="section-divider" style="margin-top:40px">Quick Actions</p>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <button class="btn-primary" onclick="showPanel('posts');openPostForm()">+ New Post</button>
+          <button class="btn-ghost" onclick="showPanel('projects');openProjectForm()">+ New Project</button>
+          <button class="btn-ghost" onclick="showPanel('experience');openExpForm()">+ New Experience</button>
+        </div>
+      </div>
+
+      <!-- ── PROFILE ── -->
+      <div id="panel-profile" class="admin-panel">
+        <div class="admin-topbar">
+          <h1>Profile</h1>
+          <button class="btn-primary" onclick="saveProfileForm()">Save Changes</button>
+        </div>
+        <div class="cms-form" style="margin-top:0">
+          <p class="section-divider" style="margin-top:0">Identity</p>
+          <div class="form-grid">
+            <div class="form-row">
+              <div class="field">
+                <label>Full Name</label>
+                <input type="text" id="p-name" placeholder="Alex Mercer">
+              </div>
+              <div class="field">
+                <label>Role / Title</label>
+                <input type="text" id="p-role" placeholder="Designer & Developer">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="field">
+                <label>Hero Tagline</label>
+                <input type="text" id="p-tagline" placeholder="I build things and write about">
+              </div>
+              <div class="field">
+                <label>Hero Emphasis (italic)</label>
+                <input type="text" id="p-taglineEm" placeholder="the process.">
+              </div>
+            </div>
+            <div class="field">
+              <label>Short Bio (hero)</label>
+              <textarea id="p-bio" rows="2"></textarea>
+            </div>
+            <div class="field">
+              <label>Avatar Image URL</label>
+              <input type="url" id="p-avatar" placeholder="https://...">
+              <img id="p-avatar-preview" class="img-preview">
+            </div>
+          </div>
+
+          <p class="section-divider">About Page</p>
+          <div class="form-grid">
+            <div class="field"><label>Paragraph 1</label><textarea id="p-about1" rows="3"></textarea></div>
+            <div class="field"><label>Paragraph 2</label><textarea id="p-about2" rows="3"></textarea></div>
+            <div class="field"><label>Paragraph 3</label><textarea id="p-about3" rows="3"></textarea></div>
+            <div class="form-row">
+              <div class="field"><label>Location</label><input type="text" id="p-location" placeholder="San Francisco, CA"></div>
+              <div class="field"><label>Currently</label><input type="text" id="p-currently" placeholder="Senior Designer at..."></div>
+            </div>
+            <div class="form-row">
+              <div class="field"><label>Interests</label><input type="text" id="p-interests"></div>
+              <div class="field"><label>Education</label><input type="text" id="p-education"></div>
+            </div>
+            <div class="field"><label>Open To</label><input type="text" id="p-openTo"></div>
+          </div>
+
+          <p class="section-divider">Social Links</p>
+          <div class="form-grid">
+            <div class="form-row">
+              <div class="field"><label>Twitter URL</label><input type="url" id="p-twitter" placeholder="https://twitter.com/..."></div>
+              <div class="field"><label>GitHub URL</label><input type="url" id="p-github" placeholder="https://github.com/..."></div>
+            </div>
+            <div class="form-row">
+              <div class="field"><label>LinkedIn URL</label><input type="url" id="p-linkedin"></div>
+              <div class="field"><label>Dribbble URL</label><input type="url" id="p-dribbble"></div>
+            </div>
+            <div class="field"><label>Email Address</label><input type="email" id="p-email" placeholder="hello@example.com"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── POSTS ── -->
+      <div id="panel-posts" class="admin-panel">
+        <div class="admin-topbar">
+          <h1>Posts</h1>
+          <button class="btn-primary" onclick="openPostForm()">+ New Post</button>
+        </div>
+        <div class="cms-list" id="posts-list"></div>
+
+        <div class="cms-form" id="post-form" style="display:none">
+          <h3 id="post-form-title">New Post</h3>
+          <input type="hidden" id="post-id">
+          <div class="form-grid">
+            <div class="field">
+              <label>Title</label>
+              <input type="text" id="post-title" placeholder="Your post title...">
+            </div>
+            <div class="form-row">
+              <div class="field">
+                <label>Tag / Category</label>
+                <input type="text" id="post-tag" placeholder="Design, Engineering, Reflection...">
+              </div>
+              <div class="field">
+                <label>Read Time (minutes)</label>
+                <input type="number" id="post-readMin" min="1" max="60" value="5">
+              </div>
+            </div>
+            <div class="field">
+              <label>Date</label>
+              <input type="date" id="post-date">
+            </div>
+            <div class="field">
+              <label>Cover Image URL (optional)</label>
+              <input type="url" id="post-cover" placeholder="https://...">
+              <img id="post-cover-preview" class="img-preview">
+            </div>
+            <div class="field">
+              <label>Excerpt (shown in list)</label>
+              <textarea id="post-excerpt" rows="2" placeholder="A short description..."></textarea>
+            </div>
+            <div class="field">
+              <label>Full Content</label>
+              <div class="editor-toolbar">
+                <button onclick="fmt('bold')"><b>B</b></button>
+                <button onclick="fmt('italic')"><i>I</i></button>
+                <button onclick="fmtWrap('h2')">H2</button>
+                <button onclick="fmtWrap('h3')">H3</button>
+                <button onclick="fmtWrap('blockquote')">" "</button>
+                <button onclick="fmtLink()">Link</button>
+                <button onclick="fmtWrap('p')">¶</button>
+              </div>
+              <div id="post-content" class="rich-editor" contenteditable="true" spellcheck="true"
+                   placeholder="Write your post here..."></div>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn-primary" onclick="savePost()">Save Post</button>
+            <button class="btn-ghost" onclick="closePostForm()">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PROJECTS ── -->
+      <div id="panel-projects" class="admin-panel">
+        <div class="admin-topbar">
+          <h1>Projects</h1>
+          <button class="btn-primary" onclick="openProjectForm()">+ New Project</button>
+        </div>
+        <div class="cms-list" id="projects-list"></div>
+
+        <div class="cms-form" id="project-form" style="display:none">
+          <h3 id="project-form-title">New Project</h3>
+          <input type="hidden" id="project-id">
+          <div class="form-grid">
+            <div class="field">
+              <label>Project Title</label>
+              <input type="text" id="project-title" placeholder="My Project">
+            </div>
+            <div class="field">
+              <label>Description</label>
+              <textarea id="project-desc" rows="3" placeholder="What did you build?"></textarea>
+            </div>
+            <div class="field">
+              <label>Tags (comma-separated)</label>
+              <input type="text" id="project-tags" placeholder="React, Figma, TypeScript">
+            </div>
+            <div class="field">
+              <label>Project URL</label>
+              <input type="url" id="project-url" placeholder="https://...">
+            </div>
+            <div class="field">
+              <label>Cover Image URL (optional)</label>
+              <input type="url" id="project-cover" placeholder="https://...">
+              <img id="project-cover-preview" class="img-preview">
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn-primary" onclick="saveProject()">Save Project</button>
+            <button class="btn-ghost" onclick="closeProjectForm()">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── EXPERIENCE ── -->
+      <div id="panel-experience" class="admin-panel">
+        <div class="admin-topbar">
+          <h1>Experience</h1>
+          <button class="btn-primary" onclick="openExpForm()">+ New Entry</button>
+        </div>
+        <div class="cms-list" id="exp-list"></div>
+
+        <div class="cms-form" id="exp-form" style="display:none">
+          <h3 id="exp-form-title">New Experience</h3>
+          <input type="hidden" id="exp-id">
+          <div class="form-grid">
+            <div class="form-row">
+              <div class="field">
+                <label>Role / Position</label>
+                <input type="text" id="exp-role" placeholder="Senior Designer">
+              </div>
+              <div class="field">
+                <label>Company</label>
+                <input type="text" id="exp-company" placeholder="Stripe">
+              </div>
+            </div>
+            <div class="field">
+              <label>Period</label>
+              <input type="text" id="exp-period" placeholder="2023 — Present">
+            </div>
+            <div class="field">
+              <label>Description</label>
+              <textarea id="exp-desc" rows="3" placeholder="What did you do there?"></textarea>
+            </div>
+            <div class="field">
+              <label>Skills (comma-separated)</label>
+              <input type="text" id="exp-skills" placeholder="Design, React, Leadership">
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn-primary" onclick="saveExp()">Save Entry</button>
+            <button class="btn-ghost" onclick="closeExpForm()">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="js/cms.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+  /* ──────────────────────────────────────────────
+     PANEL NAVIGATION
+  ────────────────────────────────────────────── */
+  function showPanel(name) {
+    document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.admin-nav-item').forEach(b => b.classList.remove('active'));
+    document.getElementById('panel-' + name).classList.add('active');
+    document.querySelectorAll('.admin-nav-item').forEach(b => {
+      if (b.textContent.toLowerCase().includes(name === 'dashboard' ? 'dash' : name.slice(0,4)))
+        b.classList.add('active');
+    });
+    if (name === 'dashboard')  renderDashboard();
+    if (name === 'posts')      renderPosts();
+    if (name === 'projects')   renderProjects();
+    if (name === 'experience') renderExp();
+    if (name === 'profile')    loadProfileForm();
+  }
+
+  /* ── DASHBOARD ─────────────────────────────── */
+  function renderDashboard() {
+    const stats = [
+      { num: CMS.getPosts().length,      label: 'Posts'      },
+      { num: CMS.getProjects().length,   label: 'Projects'   },
+      { num: CMS.getExperience().length, label: 'Experience' },
+      { num: '✓',                         label: 'Live'        },
+    ];
+    document.getElementById('stats-row').innerHTML = stats.map(s => `
+      <div class="stat-card">
+        <div class="stat-number">${s.num}</div>
+        <div class="stat-label">${s.label}</div>
+      </div>
+    `).join('');
+  }
+
+  /* ── PROFILE FORM ──────────────────────────── */
+  function loadProfileForm() {
+    const p = CMS.getProfile();
+    const fields = {
+      'p-name': p.name, 'p-role': p.role,
+      'p-tagline': p.tagline, 'p-taglineEm': p.taglineEm,
+      'p-bio': p.bio, 'p-avatar': p.avatar || '',
+      'p-about1': p.about1, 'p-about2': p.about2, 'p-about3': p.about3,
+      'p-location': p.location, 'p-currently': p.currently,
+      'p-interests': p.interests, 'p-education': p.education,
+      'p-openTo': p.openTo,
+      'p-twitter':  (p.social||{}).twitter  || '',
+      'p-github':   (p.social||{}).github   || '',
+      'p-linkedin': (p.social||{}).linkedin || '',
+      'p-dribbble': (p.social||{}).dribbble || '',
+      'p-email':    (p.social||{}).email    || '',
+    };
+    Object.entries(fields).forEach(([id, val]) => {
+      const el = document.getElementById(id);
+      if (el) el.value = val || '';
+    });
+    previewImg('p-avatar', 'p-avatar-preview');
+  }
+
+  function saveProfileForm() {
+    const get = id => document.getElementById(id)?.value?.trim() || '';
+    CMS.saveProfile({
+      name: get('p-name'), role: get('p-role'),
+      tagline: get('p-tagline'), taglineEm: get('p-taglineEm'),
+      bio: get('p-bio'), avatar: get('p-avatar'),
+      about1: get('p-about1'), about2: get('p-about2'), about3: get('p-about3'),
+      location: get('p-location'), currently: get('p-currently'),
+      interests: get('p-interests'), education: get('p-education'),
+      openTo: get('p-openTo'),
+      social: {
+        twitter:  get('p-twitter'),  github:   get('p-github'),
+        linkedin: get('p-linkedin'), dribbble: get('p-dribbble'),
+        email:    get('p-email'),
+      }
+    });
+    showToast('Profile saved!');
+  }
+
+  /* ── POSTS ─────────────────────────────────── */
+  function renderPosts() {
+    const posts = CMS.getPosts();
+    const cont  = document.getElementById('posts-list');
+    if (posts.length === 0) {
+      cont.innerHTML = `<div class="empty-state"><div class="icon">✍️</div><p>No posts yet.</p></div>`;
+      return;
+    }
+    cont.innerHTML = posts.map(p => `
+      <div class="cms-item">
+        <div class="cms-item-info">
+          <div class="cms-item-title">${p.title}</div>
+          <div class="cms-item-sub">${p.tag || '—'} · ${CMS.formatDate(p.date)} · ${p.readMin||5} min</div>
+        </div>
+        <div class="cms-item-actions">
+          <a href="../post.html?id=${p.id}" target="_blank" class="btn-ghost btn-sm">Preview</a>
+          <button class="btn-ghost btn-sm" onclick="editPost('${p.id}')">Edit</button>
+          <button class="btn-danger btn-sm" onclick="deletePost('${p.id}')">Delete</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function openPostForm(post) {
+    document.getElementById('post-form').style.display = 'block';
+    document.getElementById('post-form-title').textContent = post ? 'Edit Post' : 'New Post';
+    document.getElementById('post-id').value       = post ? post.id : CMS.uid();
+    document.getElementById('post-title').value    = post ? post.title   : '';
+    document.getElementById('post-tag').value      = post ? post.tag     : '';
+    document.getElementById('post-readMin').value  = post ? post.readMin : 5;
+    document.getElementById('post-date').value     = post ? post.date    : new Date().toISOString().slice(0,10);
+    document.getElementById('post-cover').value    = post ? (post.cover || '') : '';
+    document.getElementById('post-excerpt').value  = post ? post.excerpt  : '';
+    document.getElementById('post-content').innerHTML = post ? (post.content || '') : '';
+    previewImg('post-cover', 'post-cover-preview');
+    document.getElementById('post-form').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function closePostForm() {
+    document.getElementById('post-form').style.display = 'none';
+  }
+
+  function editPost(id) {
+    const post = CMS.getPost(id);
+    if (post) openPostForm(post);
+  }
+
+  function deletePost(id) {
+    if (!confirm('Delete this post?')) return;
+    CMS.deletePost(id); renderPosts(); showToast('Post deleted', 'error');
+  }
+
+  function savePost() {
+    const get = id => document.getElementById(id)?.value?.trim() || '';
+    const post = {
+      id:      get('post-id'),
+      title:   get('post-title'),
+      tag:     get('post-tag'),
+      readMin: parseInt(get('post-readMin')) || 5,
+      date:    get('post-date'),
+      cover:   get('post-cover'),
+      excerpt: get('post-excerpt'),
+      content: document.getElementById('post-content').innerHTML,
+    };
+    if (!post.title) { showToast('Title is required', 'error'); return; }
+    CMS.savePost(post);
+    closePostForm(); renderPosts(); showToast('Post saved!');
+  }
+
+  /* ── PROJECTS ───────────────────────────────── */
+  function renderProjects() {
+    const projects = CMS.getProjects();
+    const cont     = document.getElementById('projects-list');
+    if (projects.length === 0) {
+      cont.innerHTML = `<div class="empty-state"><div class="icon">🗂️</div><p>No projects yet.</p></div>`;
+      return;
+    }
+    cont.innerHTML = projects.map(p => `
+      <div class="cms-item">
+        <div class="cms-item-info">
+          <div class="cms-item-title">${p.title}</div>
+          <div class="cms-item-sub">${p.tags || '—'}</div>
+        </div>
+        <div class="cms-item-actions">
+          ${p.url && p.url !== '#' ? `<a href="${p.url}" target="_blank" class="btn-ghost btn-sm">Visit</a>` : ''}
+          <button class="btn-ghost btn-sm" onclick="editProject('${p.id}')">Edit</button>
+          <button class="btn-danger btn-sm" onclick="deleteProject('${p.id}')">Delete</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function openProjectForm(proj) {
+    document.getElementById('project-form').style.display = 'block';
+    document.getElementById('project-form-title').textContent = proj ? 'Edit Project' : 'New Project';
+    document.getElementById('project-id').value    = proj ? proj.id    : CMS.uid();
+    document.getElementById('project-title').value = proj ? proj.title : '';
+    document.getElementById('project-desc').value  = proj ? proj.desc  : '';
+    document.getElementById('project-tags').value  = proj ? proj.tags  : '';
+    document.getElementById('project-url').value   = proj ? (proj.url  || '') : '';
+    document.getElementById('project-cover').value = proj ? (proj.cover|| '') : '';
+    previewImg('project-cover', 'project-cover-preview');
+    document.getElementById('project-form').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function closeProjectForm() { document.getElementById('project-form').style.display = 'none'; }
+
+  function editProject(id) {
+    const proj = CMS.getProjects().find(p => p.id === id);
+    if (proj) openProjectForm(proj);
+  }
+
+  function deleteProject(id) {
+    if (!confirm('Delete this project?')) return;
+    CMS.deleteProject(id); renderProjects(); showToast('Project deleted', 'error');
+  }
+
+  function saveProject() {
+    const get = id => document.getElementById(id)?.value?.trim() || '';
+    const proj = {
+      id:    get('project-id'),
+      title: get('project-title'),
+      desc:  get('project-desc'),
+      tags:  get('project-tags'),
+      url:   get('project-url'),
+      cover: get('project-cover'),
+    };
+    if (!proj.title) { showToast('Title is required', 'error'); return; }
+    CMS.saveProject(proj);
+    closeProjectForm(); renderProjects(); showToast('Project saved!');
+  }
+
+  /* ── EXPERIENCE ─────────────────────────────── */
+  function renderExp() {
+    const exps = CMS.getExperience();
+    const cont = document.getElementById('exp-list');
+    if (exps.length === 0) {
+      cont.innerHTML = `<div class="empty-state"><div class="icon">💼</div><p>No entries yet.</p></div>`;
+      return;
+    }
+    cont.innerHTML = exps.map(e => `
+      <div class="cms-item">
+        <div class="cms-item-info">
+          <div class="cms-item-title">${e.role} at ${e.company}</div>
+          <div class="cms-item-sub">${e.period}</div>
+        </div>
+        <div class="cms-item-actions">
+          <button class="btn-ghost btn-sm" onclick="editExp('${e.id}')">Edit</button>
+          <button class="btn-danger btn-sm" onclick="deleteExp('${e.id}')">Delete</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function openExpForm(exp) {
+    document.getElementById('exp-form').style.display = 'block';
+    document.getElementById('exp-form-title').textContent = exp ? 'Edit Experience' : 'New Experience';
+    document.getElementById('exp-id').value      = exp ? exp.id      : CMS.uid();
+    document.getElementById('exp-role').value    = exp ? exp.role    : '';
+    document.getElementById('exp-company').value = exp ? exp.company : '';
+    document.getElementById('exp-period').value  = exp ? exp.period  : '';
+    document.getElementById('exp-desc').value    = exp ? exp.desc    : '';
+    document.getElementById('exp-skills').value  = exp ? exp.skills  : '';
+    document.getElementById('exp-form').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function closeExpForm() { document.getElementById('exp-form').style.display = 'none'; }
+
+  function editExp(id) {
+    const exp = CMS.getExperience().find(e => e.id === id);
+    if (exp) openExpForm(exp);
+  }
+
+  function deleteExp(id) {
+    if (!confirm('Delete this entry?')) return;
+    CMS.deleteExp(id); renderExp(); showToast('Entry deleted', 'error');
+  }
+
+  function saveExp() {
+    const get = id => document.getElementById(id)?.value?.trim() || '';
+    const exp = {
+      id:      get('exp-id'),
+      role:    get('exp-role'),
+      company: get('exp-company'),
+      period:  get('exp-period'),
+      desc:    get('exp-desc'),
+      skills:  get('exp-skills'),
+    };
+    if (!exp.role || !exp.company) { showToast('Role and Company are required', 'error'); return; }
+    CMS.saveExp(exp);
+    closeExpForm(); renderExp(); showToast('Experience saved!');
+  }
+
+  /* ── RICH TEXT EDITOR HELPERS ───────────────── */
+  function fmt(cmd) { document.execCommand(cmd, false, null); }
+  function fmtWrap(tag) {
+    const sel = window.getSelection();
+    if (!sel.rangeCount) return;
+    const range = sel.getRangeAt(0);
+    const el = document.createElement(tag);
+    el.appendChild(range.extractContents());
+    range.insertNode(el);
+  }
+  function fmtLink() {
+    const url = prompt('Enter URL:');
+    if (url) document.execCommand('createLink', false, url);
+  }
+
+  /* ── IMAGE PREVIEW HELPER ───────────────────── */
+  function previewImg(inputId, previewId) {
+    const input   = document.getElementById(inputId);
+    const preview = document.getElementById(previewId);
+    if (!input || !preview) return;
+    const update = () => {
+      const url = input.value.trim();
+      if (url) { preview.src = url; preview.style.display = 'block'; }
+      else      { preview.style.display = 'none'; }
+    };
+    input.addEventListener('input', update);
+    update();
+  }
+
+  /* ── RESET ──────────────────────────────────── */
+  function resetData() {
+    if (!confirm('This will reset all content to demo data. Are you sure?')) return;
+    CMS.resetToSeed();
+    showToast('Reset to demo data');
+    renderDashboard();
+  }
+
+  /* ── INIT ───────────────────────────────────── */
+  document.addEventListener('DOMContentLoaded', () => {
+    renderDashboard();
+    // Set up image preview listeners
+    ['p-avatar', 'post-cover', 'project-cover'].forEach(id => {
+      const previewId = id + '-preview';
+      previewImg(id, previewId);
+    });
+  });
+  </script>
+</body>
+</html>
