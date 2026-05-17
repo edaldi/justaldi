@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Home</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="nav" id="main-nav"></nav>
+
+  <div class="page">
+    <header class="hero">
+      <div class="hero-inner">
+        <p class="hero-eyebrow" id="hero-role">Loading...</p>
+        <h1 id="hero-headline">&nbsp;</h1>
+        <p class="hero-bio" id="hero-bio">&nbsp;</p>
+        <div class="hero-ctas">
+          <a href="thoughts.html" class="btn-primary">Read my thoughts &#8594;</a>
+          <a href="portfolio.html" class="btn-ghost">See my work</a>
+        </div>
+      </div>
+    </header>
+
+    <section class="section" style="border-top:1px solid var(--border)">
+      <div class="section-wrap">
+        <div class="section-header">
+          <div>
+            <p class="section-label">Latest Writing</p>
+            <h2 class="section-title">Recent Thoughts</h2>
+          </div>
+          <a href="thoughts.html" class="btn-ghost">All posts &#8594;</a>
+        </div>
+        <div class="posts-list" id="home-posts"><p style="color:var(--ink-faint);font-size:.9rem;padding:24px 0">Loading...</p></div>
+      </div>
+    </section>
+
+    <section class="section" style="background:var(--paper-warm);border-top:1px solid var(--border)">
+      <div class="section-wrap">
+        <div class="section-header">
+          <div>
+            <p class="section-label">Selected Work</p>
+            <h2 class="section-title">Projects</h2>
+          </div>
+          <a href="portfolio.html" class="btn-ghost">All projects &#8594;</a>
+        </div>
+        <div class="projects-grid" id="home-projects"><p style="color:var(--ink-faint);font-size:.9rem">Loading...</p></div>
+      </div>
+    </section>
+  </div>
+
+  <footer class="footer" id="main-footer"></footer>
+
+  <script src="js/cms.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    buildNav('home');
+
+    document.addEventListener('DOMContentLoaded', async function () {
+      const [profile, posts, projects] = await Promise.all([
+        CMS.getProfile(),
+        CMS.getPosts(),
+        CMS.getProjects()
+      ]);
+
+      document.title = profile.name + ' — ' + profile.role;
+      document.getElementById('hero-role').textContent = profile.role;
+      document.getElementById('hero-headline').innerHTML = profile.tagline + '<br><em>' + profile.taglineEm + '</em>';
+      document.getElementById('hero-bio').textContent = profile.bio;
+
+      // Footer uses profile name
+      buildFooter(profile);
+
+      // Latest 3 posts
+      const postsCont = document.getElementById('home-posts');
+      const latest = posts.slice(0, 3);
+      postsCont.innerHTML = latest.length === 0
+        ? '<p style="color:var(--ink-faint);font-size:.9rem;padding:24px 0">No posts yet.</p>'
+        : latest.map(function(post) {
+            return '<a class="post-card fade-in" href="post.html?id=' + post.id + '">' +
+              '<div>' +
+                '<span class="post-tag">' + (post.tag || '') + '</span>' +
+                '<h3 class="post-title">' + post.title + '</h3>' +
+                '<p class="post-excerpt">' + post.excerpt + '</p>' +
+              '</div>' +
+              '<div class="post-meta-col">' +
+                '<div class="post-date">' + CMS.formatDate(post.date) + '</div>' +
+                '<div class="post-read">' + (post.readMin || 5) + ' min read</div>' +
+              '</div></a>';
+          }).join('');
+
+      // Latest 3 projects
+      const projCont = document.getElementById('home-projects');
+      const latest3 = projects.slice(0, 3);
+      projCont.innerHTML = latest3.length === 0
+        ? '<p style="color:var(--ink-faint);font-size:.9rem">No projects yet.</p>'
+        : latest3.map(function(proj) {
+            const url = proj.url && proj.url !== '#' ? proj.url : '';
+            const tags = (proj.tags || '').split(',').map(function(t){ return '<span class="tag">' + t.trim() + '</span>'; }).join('');
+            return '<a class="project-card fade-in"' +
+              ' href="' + (url || 'javascript:void(0)') + '"' +
+              (url ? ' target="_blank" rel="noopener"' : '') + '>' +
+              (proj.cover ? '<img class="project-cover" src="' + proj.cover + '" alt="' + proj.title + '">' : '') +
+              '<h3 class="project-title">' + proj.title + '</h3>' +
+              '<p class="project-desc">' + proj.desc + '</p>' +
+              '<div class="project-tags">' + tags + '</div>' +
+              (url ? '<span class="project-url">Visit &#8594;</span>' : '') +
+              '</a>';
+          }).join('');
+
+      initScrollAnimations();
+    });
+  </script>
+</body>
+</html>

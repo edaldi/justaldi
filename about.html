@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="nav" id="main-nav"></nav>
+
+  <div class="page">
+    <section class="section about-dark">
+      <div class="section-wrap">
+        <p class="section-label">A bit about me</p>
+        <h2 class="section-title" id="about-headline">Loading...</h2>
+        <div class="about-grid">
+          <div>
+            <img id="about-avatar" class="about-avatar" src="" alt="" style="display:none">
+            <div class="about-text" id="about-text"></div>
+            <div class="social-links" id="social-links"></div>
+          </div>
+          <div class="about-details" id="about-details"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer class="footer" id="main-footer"></footer>
+
+  <script src="js/cms.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    buildNav('about');
+
+    document.addEventListener('DOMContentLoaded', async function () {
+      const p = await CMS.getProfile();
+      document.title = 'About — ' + p.name;
+      buildFooter(p);
+
+      document.getElementById('about-headline').textContent = 'Hey, I\'m ' + p.name.split(' ')[0] + '.';
+
+      if (p.avatar) {
+        const av = document.getElementById('about-avatar');
+        av.src = p.avatar; av.style.display = 'block';
+      }
+
+      document.getElementById('about-text').innerHTML =
+        [p.about1, p.about2, p.about3].filter(Boolean).map(function(t){ return '<p>' + t + '</p>'; }).join('');
+
+      const s = p.social || {};
+      const socials = [
+        { label: 'Twitter',  href: s.twitter  },
+        { label: 'GitHub',   href: s.github   },
+        { label: 'LinkedIn', href: s.linkedin },
+        { label: 'Dribbble', href: s.dribbble },
+        { label: 'Email',    href: s.email ? 'mailto:' + s.email : '' },
+      ].filter(function(x){ return x.href && x.href !== '#' && x.href !== ''; });
+      document.getElementById('social-links').innerHTML = socials.map(function(x){
+        return '<a class="social-link" href="' + x.href + '" target="_blank" rel="noopener">' + x.label + '</a>';
+      }).join('');
+
+      const details = [
+        { label: 'Location',  value: p.location  },
+        { label: 'Currently', value: p.currently },
+        { label: 'Interests', value: p.interests },
+        { label: 'Education', value: p.education },
+        { label: 'Open to',   value: p.openTo    },
+      ].filter(function(d){ return d.value; });
+      document.getElementById('about-details').innerHTML = details.map(function(d){
+        return '<div><div class="detail-label">' + d.label + '</div><div class="detail-value">' + d.value + '</div></div>';
+      }).join('');
+    });
+  </script>
+</body>
+</html>

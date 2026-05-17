@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Post</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="nav" id="main-nav"></nav>
+
+  <div class="page">
+    <article class="post-page" id="post-content">
+      <p style="color:var(--ink-faint);font-size:.9rem;padding:80px 0 0">Loading...</p>
+    </article>
+  </div>
+
+  <footer class="footer" id="main-footer"></footer>
+
+  <script src="js/cms.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    buildNav('thoughts');
+
+    document.addEventListener('DOMContentLoaded', async function () {
+      const params  = new URLSearchParams(window.location.search);
+      const id      = params.get('id');
+      const [profile, post] = await Promise.all([CMS.getProfile(), id ? CMS.getPost(id) : Promise.resolve(null)]);
+      const cont = document.getElementById('post-content');
+
+      buildFooter(profile);
+
+      if (!post) {
+        cont.innerHTML = '<a href="thoughts.html" class="back-link">&#8592; Back to Thoughts</a>' +
+          '<div class="empty-state" style="margin-top:40px"><div class="icon">&#128269;</div><p>Post not found.</p></div>';
+        return;
+      }
+
+      document.title = post.title + ' — ' + profile.name;
+      cont.innerHTML =
+        '<a href="thoughts.html" class="back-link">&#8592; Back to Thoughts</a>' +
+        '<span class="post-page-tag">' + (post.tag || '') + '</span>' +
+        '<h1>' + post.title + '</h1>' +
+        '<div class="post-page-meta">' +
+          '<span>' + CMS.formatDate(post.date) + '</span>' +
+          '<span>&middot;</span>' +
+          '<span>' + (post.readMin || 5) + ' min read</span>' +
+        '</div>' +
+        (post.cover ? '<img class="post-cover-img" src="' + post.cover + '" alt="' + post.title + '">' : '') +
+        '<div class="post-body">' + (post.content || '<p>' + post.excerpt + '</p>') + '</div>';
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Experience</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="nav" id="main-nav"></nav>
+
+  <div class="page">
+    <div class="page-header">
+      <p class="section-label">Career</p>
+      <h1>Experience</h1>
+    </div>
+    <section class="section">
+      <div class="section-wrap">
+        <div class="timeline" id="timeline"><p style="color:var(--ink-faint);font-size:.9rem;padding:24px 0">Loading...</p></div>
+      </div>
+    </section>
+  </div>
+
+  <footer class="footer" id="main-footer"></footer>
+
+  <script src="js/cms.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    buildNav('experience');
+
+    document.addEventListener('DOMContentLoaded', async function () {
+      const [profile, experience] = await Promise.all([CMS.getProfile(), CMS.getExperience()]);
+      document.title = 'Experience — ' + profile.name;
+      buildFooter(profile);
+
+      const timeline = document.getElementById('timeline');
+      if (experience.length === 0) {
+        timeline.innerHTML = '<div class="empty-state"><div class="icon">&#128188;</div><p>No experience yet.</p></div>';
+        return;
+      }
+      timeline.innerHTML = experience.map(function(exp) {
+        const skills = (exp.skills || '').split(',').map(function(s){ return '<span class="tag">' + s.trim() + '</span>'; }).join('');
+        return '<div class="timeline-item fade-in">' +
+          '<div class="timeline-period">' + exp.period + '</div>' +
+          '<div>' +
+            '<div class="timeline-role">' + exp.role + '</div>' +
+            '<div class="timeline-company">' + exp.company + '</div>' +
+            '<p class="timeline-desc">' + exp.desc + '</p>' +
+            '<div class="timeline-skills">' + skills + '</div>' +
+          '</div></div>';
+      }).join('');
+      initScrollAnimations();
+    });
+  </script>
+</body>
+</html>

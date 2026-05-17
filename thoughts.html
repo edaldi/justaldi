@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Thoughts</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="nav" id="main-nav"></nav>
+
+  <div class="page">
+    <div class="page-header">
+      <p class="section-label">Writing</p>
+      <h1>Thoughts &amp; Essays</h1>
+    </div>
+    <section class="section">
+      <div class="section-wrap">
+        <div id="tag-filters" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:36px"></div>
+        <div class="posts-list" id="posts-list"><p style="color:var(--ink-faint);font-size:.9rem;padding:24px 0">Loading...</p></div>
+      </div>
+    </section>
+  </div>
+
+  <footer class="footer" id="main-footer"></footer>
+
+  <script src="js/cms.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    buildNav('thoughts');
+
+    document.addEventListener('DOMContentLoaded', async function () {
+      const [profile, posts] = await Promise.all([CMS.getProfile(), CMS.getPosts()]);
+      document.title = 'Thoughts — ' + profile.name;
+      buildFooter(profile);
+
+      let activeTag = 'All';
+      const tags = ['All'];
+      posts.forEach(function(p) { if (p.tag && tags.indexOf(p.tag) === -1) tags.push(p.tag); });
+
+      function renderFilters() {
+        document.getElementById('tag-filters').innerHTML = tags.map(function(t) {
+          const active = t === activeTag;
+          return '<button onclick="filterBy(\'' + t + '\')" style="' +
+            'padding:6px 16px;border-radius:100px;border:1px solid var(--border);' +
+            'background:' + (active ? 'var(--ink)' : 'var(--paper-warm)') + ';' +
+            'color:' + (active ? 'var(--paper)' : 'var(--ink-muted)') + ';' +
+            'font-size:.8rem;font-weight:500;cursor:pointer;font-family:var(--sans);transition:all .2s">' +
+            t + '</button>';
+        }).join('');
+      }
+
+      window.filterBy = function(tag) { activeTag = tag; renderFilters(); renderPosts(); };
+
+      function renderPosts() {
+        const filtered = activeTag === 'All' ? posts : posts.filter(function(p){ return p.tag === activeTag; });
+        const cont = document.getElementById('posts-list');
+        if (filtered.length === 0) {
+          cont.innerHTML = '<div class="empty-state"><div class="icon">&#9998;</div><p>No posts yet.</p></div>';
+          return;
+        }
+        cont.innerHTML = filtered.map(function(post) {
+          return '<a class="post-card fade-in" href="post.html?id=' + post.id + '">' +
+            '<div>' +
+              '<span class="post-tag">' + (post.tag || '') + '</span>' +
+              '<h3 class="post-title">' + post.title + '</h3>' +
+              '<p class="post-excerpt">' + post.excerpt + '</p>' +
+            '</div>' +
+            '<div class="post-meta-col">' +
+              (post.cover ? '<img class="post-cover-thumb" src="' + post.cover + '" alt="">' : '') +
+              '<div class="post-date">' + CMS.formatDate(post.date) + '</div>' +
+              '<div class="post-read">' + (post.readMin || 5) + ' min read</div>' +
+            '</div></a>';
+        }).join('');
+        initScrollAnimations();
+      }
+
+      renderFilters();
+      renderPosts();
+    });
+  </script>
+</body>
+</html>
