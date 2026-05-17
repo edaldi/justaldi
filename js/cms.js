@@ -63,8 +63,8 @@
 const CMS = (() => {
 
   /* ── CONFIG — REPLACE THESE ──────────────────── */
-  const SUPABASE_URL = 'https://YOUR_PROJECT.supabase.co';
-  const SUPABASE_KEY = 'YOUR_ANON_PUBLIC_KEY';
+  const SUPABASE_URL = 'https://jblqqheqhpocyeivmbsr.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpibHFxaGVxaHBvY3llaXZtYnNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwMDc1NzIsImV4cCI6MjA5NDU4MzU3Mn0.drnDznrQw2uJsQR3Mr0tlXbX8Ve_V6Hop5oVFlP-QWQ';
   /* ─────────────────────────────────────────────── */
 
   const BASE = SUPABASE_URL + '/rest/v1';
