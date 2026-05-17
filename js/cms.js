@@ -57,7 +57,7 @@
  *   create policy "public all" on posts      for all using (true) with check (true);
  *   create policy "public all" on projects   for all using (true) with check (true);
  *   create policy "public all" on experience for all using (true) with check (true);
- * ─────────────────────────────────────────────────────────
+ * ────────────────────────────────────────────────────────
  */
 
 const CMS = (() => {
